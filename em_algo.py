@@ -1,3 +1,5 @@
+import time
+
 import numpy as np
 from sklearn.cluster import KMeans
 
@@ -45,11 +47,13 @@ class ExpectationMaximization:
         
     def fit(self):
         for iteration in range(self.max_iter):
+            start = time.time()
             self.expectation()
             self.maximization()
             ### Compute log likelihood
             self.current_log_likelihood = self.log_likelihood()
-            print('Iteration: ', iteration, 'Log Likelihood: ', self.current_log_likelihood)
+            end = time.time()
+            print('Iteration: ', iteration, 'Log Likelihood: ', self.current_log_likelihood, 'Time (s): ', end - start)
             ### Plot the clusters
             if iteration % self.plot_step == 0 or iteration == self.max_iter - 1:
                 plot_gaussians_on_bars(self.X, self.mus, np.diagonal(self.covars, axis1=1, axis2=2), iteration, save_path=self.save_path, show=self.show_plot)  

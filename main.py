@@ -35,16 +35,22 @@ if __name__ == '__main__':
     alphas, mus, covars, W = em.fit()
     
     # Assign each voxel to the cluster with the highest probability
-    voxel_assignments = np.argmax(W, axis=1)
-    ### Create a new image with the same shape as the original image with the voxel assignments
+    voxel_assignments = np.argmax(W, axis=1)  # Get the index of the highest responsibility for each voxel
+    # Create a new 3D image with the same shape as the original brain image
     segmented_image = np.zeros_like(T1_np_img)
-    ### Assign the voxel assignments to the segmented image
-    segmented_image[brain_voxels_indices] = voxel_assignments + 1
+    # Map the voxel assignments back to the 3D segmented image using the brain_voxels_indices
+    segmented_image[brain_voxels_indices] = voxel_assignments + 1  # +1 to make the clusters 1, 2, 3
     
-    ### Manually correct the labels
-    segmented_image[segmented_image == 2] = -1
-    segmented_image[segmented_image == 3] = 2
-    segmented_image[segmented_image == -1] = 3
+    ## 1 - CSF, 2 - GM, 3 - WM 
+    ## Sort the clusters based on the mean intensity of the voxels in each cluster
+    sorted_mean_indices = np.argsort(np.mean(mus, axis=1)) + 1
+    ## Assign the clusters to the correct class
+    class1_idx = np.where(segmented_image == 1)
+    class2_idx = np.where(segmented_image == 2)
+    class3_idx = np.where(segmented_image == 3)
+    segmented_image[class1_idx] = sorted_mean_indices[0]
+    segmented_image[class2_idx] = sorted_mean_indices[1]
+    segmented_image[class3_idx] = sorted_mean_indices[2]
     
     ### Save the segmented image
     segmented_nii = nib.Nifti1Image(segmented_image, T1.affine)
