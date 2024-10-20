@@ -31,7 +31,7 @@ if __name__ == '__main__':
     X = np.vstack((T1_skull_stripped, T2_skull_stripped)).T
     
     # Initialize the Expectation Maximization algorithm
-    em = ExpectationMaximization(X, k=3, max_iter=50, type='kmeans')
+    em = ExpectationMaximization(X, k=3, max_iter=50, type='kmeans', plot_step=25, save_path='results/', show_plot=False, stop_criterion=1e-4)
     alphas, mus, covars, W = em.fit()
     
     # Assign each voxel to the cluster with the highest probability

@@ -74,7 +74,7 @@ In this example, I have 2 MRI images of the brain, and I want to segment them in
 You can run the EM algorithm by calling the main function in your code. Here’s an example:
 
 ```python
-em = ExpectationMaximization(X, k=3, max_iter=50, type='kmeans')
+em = ExpectationMaximization(X, k=3, max_iter=50, type='kmeans', plot_step=25, save_path='results/', show_plot=True, stop_criterion=1e-4)
 alphas, mus, covars, W = em.fit()
 ```
 
@@ -82,6 +82,12 @@ alphas, mus, covars, W = em.fit()
 
 - `X`: A NumPy array containing the dataset with shape `(N, d)`.
 - `k`: Number of Gaussian components (clusters) corresponding to the number of regions you want to segment the data into.
+- `max_iter`: Maximum number of iterations for the EM algorithm.
+- `type`: Initialization method for the means and covariances. Options are `'random'` or `'kmeans'`.
+- `plot_step`: Interval for plotting the segmentation results.
+- `save_path`: Directory to save the results and plots.
+- `show_plot`: Whether to display the segmentation results during training.
+- `stop_criterion`: Stopping criterion for the EM algorithm based on the change in log-likelihood.
 
 ---
 
@@ -89,12 +95,15 @@ alphas, mus, covars, W = em.fit()
 
 ```bash
 .
-├── README.md               # Project documentation
 ├── data                    # Example data for testing
-├── requirements.txt        # Dependencies
+├── results                 # Output results (segmentation masks)
+├── .gitignore              # Files to ignore in Git
+├── README.md               # Project documentation
+├── Exp.ipynb               # Jupyter notebook for visualization
 ├── em_algo.py              # Main EM algorithm implementation
-├── utils.py                # Helper functions (dice score)
-└── main.py                 # Script to run the EM algorithm on example datasets
+├── main.py                 # Script to run the EM algorithm on example datasets
+├── requirements.txt        # Dependencies
+└── utils.py                # Utility functions for dice score and visualization
 ```
 
 ---

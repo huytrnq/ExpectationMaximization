@@ -1,8 +1,9 @@
 import numpy as np
 from sklearn.cluster import KMeans
 
+from utils import plot_gaussians_on_bars
 class ExpectationMaximization:
-    def __init__(self, data, k, max_iter=100, type='kmeans', stop_criterion=1e-6):
+    def __init__(self, data, k, max_iter=100, type='kmeans', stop_criterion=1e-6, plot_step=-1, save_path=None, show_plot=False):
         """Expectation Maximization algorithm for Gaussian Mixture Models
 
         Args:
@@ -10,6 +11,10 @@ class ExpectationMaximization:
             k (int): number of components
             max_iter (int, optional): Iterations. Defaults to 100.
             type (str, optional): random or kmeans to initialize parameters. Defaults to 'kmeans'.
+            stop_criterion (float, optional): stop criterion. Defaults to 1e-6.
+            plot_step (int, optional): Display the plot of the clusters at step plot_step, -1 to plot at the end. Defaults to -1.
+            save_path (str, optional): path to save the plot. Defaults to None.
+            show_plot (bool, optional): Display the plot. Defaults to False.
         """
         self.X = data
         self.k = k
@@ -19,6 +24,9 @@ class ExpectationMaximization:
         self.stop_criterion = stop_criterion
         self.previous_log_likelihood = -np.inf
         self.current_log_likelihood = 0
+        self.plot_step = plot_step
+        self.save_path = save_path
+        self.show_plot = show_plot
         self.initialization()
         
     def log_likelihood(self):
@@ -33,6 +41,7 @@ class ExpectationMaximization:
                 total_log_likelihood += self.alphas[k] * self.gaussian_mixture_models(self.X[i], self.mus[k], self.covars[k])
             current_log_likelihood += np.log(total_log_likelihood)
         return current_log_likelihood
+    
         
     def fit(self):
         for iteration in range(self.max_iter):
@@ -41,6 +50,11 @@ class ExpectationMaximization:
             ### Compute log likelihood
             self.current_log_likelihood = self.log_likelihood()
             print('Iteration: ', iteration, 'Log Likelihood: ', self.current_log_likelihood)
+            ### Plot the clusters
+            if iteration % self.plot_step == 0 or iteration == self.max_iter - 1:
+                plot_gaussians_on_bars(self.X, self.mus, np.diagonal(self.covars, axis1=1, axis2=2), iteration, save_path=self.save_path, show=self.show_plot)  
+                    
+            ### Check for convergence
             if np.abs(self.current_log_likelihood - self.previous_log_likelihood) < self.stop_criterion:
                 break
             else:
