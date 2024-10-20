@@ -7,6 +7,7 @@ This repository implements the **Expectation-Maximization (EM) algorithm** for G
 - [Overview](#overview)
 - [Features](#features)
 - [Installation](#installation)
+- [Performance Optimization](#performance)
 - [Usage](#usage)
   - [1. Data Preparation](#data-preparation)
   - [2. Running the EM Algorithm](#running-the-em-algorithm)
@@ -61,6 +62,13 @@ The EM algorithm alternates between these two steps until convergence.
 
 ---
 
+## Performance Optimization
+
+|      Methodology    | For Loop        | Matrix Multiplication |
+|---------------------|-----------------|-----------------------|
+| Processing Time (s) | ~17.5           | ~0.1                  |
+
+---
 
 ## Usage
 
