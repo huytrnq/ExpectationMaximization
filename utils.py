@@ -2,7 +2,7 @@ import os
 import numpy as np
 import nibabel as nib
 import matplotlib.pyplot as plt
-from scipy.stats import multivariate_normal, norm
+from scipy.stats import norm
 
 def calculate_dice_score(nii_image1_path, nii_image2_path, ignore_background=True):
     """
