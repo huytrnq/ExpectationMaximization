@@ -43,21 +43,21 @@ The EM algorithm alternates between these two steps until convergence.
 
 1. Clone the repository to your local machine:
 
-   \`\`\`bash
+   ```bash
    git clone https://github.com/huytrnq/ExpectationMaximization.git
-   \`\`\`
+   ```
 
 2. Navigate to the directory:
 
-   \`\`\`bash
+   ```bash
    cd ExpectationMaximization
-   \`\`\`
+   ```
 
 3. Install the necessary dependencies. You can use `pip` or any other package manager of your choice:
 
-   \`\`\`bash
+   ```bash
    pip install -r requirements.txt
-   \`\`\`
+   ```
 
 ---
 
