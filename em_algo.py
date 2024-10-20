@@ -38,10 +38,9 @@ class ExpectationMaximization:
         """
         total_log_likelihood = 0
         current_log_likelihood = 0
-        for i in range(self.N):
-            for k in range(self.k):
-                total_log_likelihood += self.alphas[k] * self.gaussian_mixture_models(self.X[i], self.mus[k], self.covars[k])
-            current_log_likelihood += np.log(total_log_likelihood)
+        for k in range(self.k):
+            total_log_likelihood += np.sum(self.alphas[k] * self.gaussian_mixture_models(self.X, self.mus[k], self.covars[k]))
+        current_log_likelihood += np.log(total_log_likelihood)
         return current_log_likelihood
     
         
@@ -96,8 +95,7 @@ class ExpectationMaximization:
         """
         ### Compute the membership weights
         for k in range(self.k):
-            for i in range(self.N):
-                self.W[i, k] = self.alphas[k] * self.gaussian_mixture_models(self.X[i], self.mus[k], self.covars[k])
+            self.W[:, k] = self.alphas[k] * self.gaussian_mixture_models(self.X, self.mus[k], self.covars[k])
         ### Normalize the membership weights
         self.W = self.W / np.sum(self.W, axis=1)[:, np.newaxis]
     
@@ -105,6 +103,7 @@ class ExpectationMaximization:
     def maximization(self):
         """Maximization step of the Expectation Maximization algorithm
         """
+
         for k in range(self.k):
             N_k = np.sum(self.W[:, k])
             self.alphas[k] = N_k / self.N
@@ -115,11 +114,11 @@ class ExpectationMaximization:
             self.covars[k] = (1 / N_k) * (self.X - self.mus[k]).T @ (self.W[:, k][:, np.newaxis] * (self.X - self.mus[k]))
             
             
-    def gaussian_mixture_models(self, x, mu, covar):
+    def gaussian_mixture_models(self, X, mu, covar):
         """Gaussian Mixture Models of components k
 
         Args:
-            x (float): input data
+            X (float): input data of shape (N, d) with N samples and d dimensions
             mu (float): mean of the Gaussian distribution of components k
             covar (float): covariance of the Gaussian distribution of components k
             d (int): dimension of the data
@@ -127,11 +126,12 @@ class ExpectationMaximization:
             float: probability of the Gaussian distribution of components k
         """
 
-        covar_inv = np.linalg.inv(covar)
-        covar_det = np.linalg.det(covar)
+        covar_inv = np.linalg.inv(covar) ## shape d x d
+        covar_det = np.linalg.det(covar) ## scalar
         
-        numerator = np.exp(-0.5 * np.dot(np.dot((x - mu).T, covar_inv), (x - mu)))
-        denominator = np.sqrt((2 * np.pi) ** self.d * covar_det)
+        diff = X - mu ## shape X x d
+        numerator = np.exp(-0.5 * np.sum(((diff @ covar_inv) * diff), axis=1)) ## shape N x 1
+        denominator = np.sqrt((2 * np.pi) ** self.d * covar_det) ## scalar
         # Avoid invalid values in sqrt by ensuring determinant is positive
-        p_k = numerator / denominator
+        p_k = numerator / denominator ## shape N x 1
         return p_k
