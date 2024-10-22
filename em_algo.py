@@ -55,7 +55,10 @@ class ExpectationMaximization:
             print('Iteration: ', iteration, ' --- Log Likelihood: ', self.current_log_likelihood, ' --- Time (s): ', end - start)
             ### Plot the clusters
             if iteration % self.plot_step == 0 or iteration == self.max_iter - 1:
-                plot_gaussians_on_bars(self.X, self.mus, np.diagonal(self.covars, axis1=1, axis2=2), iteration, save_path=self.save_path, show=self.show_plot)  
+                if self.d == 1:
+                    plot_gaussians_on_bars(self.X, self.mus, self.covars, iteration, save_path=self.save_path, show=self.show_plot)
+                else:
+                    plot_gaussians_on_bars(self.X, self.mus, np.diagonal(self.covars, axis1=1, axis2=2), iteration, save_path=self.save_path, show=self.show_plot)  
                     
             ### Check for convergence
             if np.abs(self.current_log_likelihood - self.previous_log_likelihood) < self.stop_criterion:
@@ -126,8 +129,14 @@ class ExpectationMaximization:
             float: probability of the Gaussian distribution of components k
         """
 
-        covar_inv = np.linalg.inv(covar) ## shape d x d
-        covar_det = np.linalg.det(covar) ## scalar
+        if self.d == 1:
+            covar = np.array([[covar]])
+            covar_inv = 1 / covar
+            covar_det = covar
+        else:
+            
+            covar_inv = np.linalg.inv(covar) ## shape d x d
+            covar_det = np.linalg.det(covar) ## scalar
         
         diff = X - mu ## shape X x d
         numerator = np.exp(-0.5 * np.sum(((diff @ covar_inv) * diff), axis=1)) ## shape N x 1

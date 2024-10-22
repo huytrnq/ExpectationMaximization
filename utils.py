@@ -110,7 +110,10 @@ def plot_gaussians_on_bars(X, mus, covars, iteration, save_path=None, show=False
         mu = mus[i][0]  # Use the first component of the mean (X-axis)
 
         # Covariance matrix: project onto the first dimension (covariance between x and x, i.e., variance in the x direction)
-        sigma = np.sqrt(covars[i][0])  # Extract variance for the first dimension (X-axis)
+        if covars.ndim == 2:
+            sigma = np.sqrt(covars[i][0]) # Extract variance for the first dimension (X-axis)
+        else:
+            sigma = np.sqrt(covars[i])
 
         # Compute the 1D Gaussian PDF
         y = norm.pdf(x, mu, sigma)
