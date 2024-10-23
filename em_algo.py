@@ -91,7 +91,7 @@ class ExpectationMaximization:
         elif self.type == 'random':
             # Randomly initialize means (mus) within the range of the data
             self.mus = np.random.uniform(np.min(self.X), np.max(self.X), size=(self.k, self.d))
-            
+            # Randomly initialize covariances (covars)
             if self.d == 1:
                 # For 1D, covariances are scalars (variances)
                 self.covars = np.random.uniform(0, np.var(self.X), size=self.k)
