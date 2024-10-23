@@ -113,8 +113,8 @@ alphas, mus, covars, W = em.fit()
 ├── results                 # Output results (segmentation masks)
 ├── .gitignore              # Files to ignore in Git
 ├── README.md               # Project documentation
-├── Exp.ipynb               # Jupyter notebook for Multi-Modal MRI Segmentation
-├── Exp_Single.ipynb        # Jupyter notebook for Single-Modal MRI Segmentation
+├── Exp_MutilModal.ipynb               # Jupyter notebook for Multi-Modal MRI Segmentation
+├── Exp_SinglModal.ipynb        # Jupyter notebook for Single-Modal MRI Segmentation
 ├── em_algo.py              # Main EM algorithm implementation
 ├── main.py                 # Script to run the EM algorithm on example datasets
 ├── requirements.txt        # Dependencies
