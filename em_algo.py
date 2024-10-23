@@ -100,12 +100,8 @@ class ExpectationMaximization:
                 self.covars = np.zeros((self.k, self.d, self.d))
                 for i in range(self.k):
                     # Create a random dxd matrix and use dot product to make it positive semi-definite
-                    A = np.random.randn(self.d, self.d)
+                    A = np.random.uniform(0, np.var(self.X), size=(self.d, self.d))
                     self.covars[i] = np.dot(A, A.T)  # A * A.T makes it positive semi-definite
-                    
-                    # Scale covariance based on the data's variance to make it more realistic
-                    self.covars[i] *= np.var(self.X, axis=0).mean()  
-                    
                     # Add small diagonal to ensure numerical stability
                     self.covars[i] += np.eye(self.d) * 1e-6
         else:
