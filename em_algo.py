@@ -44,7 +44,6 @@ class ExpectationMaximization:
         current_log_likelihood += np.log(total_log_likelihood)  
         return current_log_likelihood
 
-    
         
     def fit(self):
         for iteration in range(self.max_iter):
@@ -69,6 +68,7 @@ class ExpectationMaximization:
                 self.previous_log_likelihood = self.current_log_likelihood
         return self.alphas, self.mus, self.covars, self.W
         
+        
     def initialization(self):
         """Initialize parameters of the Gaussian Mixture Models
 
@@ -89,17 +89,25 @@ class ExpectationMaximization:
             # Initialize K covariance matrices as copies of the dataset's covariance matrix
             self.covars = np.array([cov_matrix for _ in range(self.k)])
         elif self.type == 'random':
-            # Initialize means within the range of the data, using a fraction of max value
+            # Randomly initialize means (mus) within the range of the data
             self.mus = np.random.uniform(np.min(self.X), np.max(self.X), size=(self.k, self.d))
             
-            # Initialize small positive covariances to avoid overflow
             if self.d == 1:
-                # 1D case: Variance should be a small positive number
-                self.covars = np.random.uniform(0.1, 1, size=(self.k, self.d))  # Avoid too small or too large
+                # For 1D, covariances are scalars (variances)
+                self.covars = np.random.uniform(0, np.var(self.X), size=self.k)
             else:
-                # Multidimensional case: Initialize as scaled identity matrices
-                self.covars = np.array([np.eye(self.d) * np.random.uniform(0.1, 1) for _ in range(self.k)])
-
+                # For d-dimensional data, we need positive semi-definite matrices
+                self.covars = np.zeros((self.k, self.d, self.d))
+                for i in range(self.k):
+                    # Create a random dxd matrix and use dot product to make it positive semi-definite
+                    A = np.random.randn(self.d, self.d)
+                    self.covars[i] = np.dot(A, A.T)  # A * A.T makes it positive semi-definite
+                    
+                    # Scale covariance based on the data's variance to make it more realistic
+                    self.covars[i] *= np.var(self.X, axis=0).mean()  
+                    
+                    # Add small diagonal to ensure numerical stability
+                    self.covars[i] += np.eye(self.d) * 1e-6
         else:
             raise ValueError('Invalid initialization type')
     
