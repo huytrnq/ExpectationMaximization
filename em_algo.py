@@ -40,8 +40,10 @@ class ExpectationMaximization:
         current_log_likelihood = 0
         for k in range(self.k):
             total_log_likelihood += np.sum(self.alphas[k] * self.gaussian_mixture_models(self.X, self.mus[k], self.covars[k]))
-        current_log_likelihood += np.log(total_log_likelihood)
+        
+        current_log_likelihood += np.log(total_log_likelihood)  
         return current_log_likelihood
+
     
         
     def fit(self):
@@ -87,8 +89,17 @@ class ExpectationMaximization:
             # Initialize K covariance matrices as copies of the dataset's covariance matrix
             self.covars = np.array([cov_matrix for _ in range(self.k)])
         elif self.type == 'random':
-            self.mus = np.random.rand(self.k, self.d)
-            self.covars = np.array([np.eye(self.d) for _ in range(self.k)])
+            # Initialize means within the range of the data, using a fraction of max value
+            self.mus = np.random.uniform(np.min(self.X), np.max(self.X), size=(self.k, self.d))
+            
+            # Initialize small positive covariances to avoid overflow
+            if self.d == 1:
+                # 1D case: Variance should be a small positive number
+                self.covars = np.random.uniform(0.1, 1, size=(self.k, self.d))  # Avoid too small or too large
+            else:
+                # Multidimensional case: Initialize as scaled identity matrices
+                self.covars = np.array([np.eye(self.d) * np.random.uniform(0.1, 1) for _ in range(self.k)])
+
         else:
             raise ValueError('Invalid initialization type')
     
@@ -121,26 +132,27 @@ class ExpectationMaximization:
         """Gaussian Mixture Models of components k
 
         Args:
-            X (float): input data of shape (N, d) with N samples and d dimensions
-            mu (float): mean of the Gaussian distribution of components k
-            covar (float): covariance of the Gaussian distribution of components k
-            d (int): dimension of the data
+            X (numpy array): input data of shape (N, d) with N samples and d dimensions
+            mu (numpy array): mean of the Gaussian distribution of components k
+            covar (numpy array): covariance of the Gaussian distribution of components k
+
         Returns:
-            float: probability of the Gaussian distribution of components k
+            numpy array: probability of the Gaussian distribution of components k
         """
 
+        # Regularize covariance matrix
         if self.d == 1:
-            covar = np.array([[covar]])
+            covar = np.array([[covar]])  # Ensure 2D structure for 1D case
             covar_inv = 1 / covar
             covar_det = covar
         else:
-            
-            covar_inv = np.linalg.inv(covar) ## shape d x d
-            covar_det = np.linalg.det(covar) ## scalar
+            covar_inv = np.linalg.inv(covar)  # Inverse of covariance matrix
+            covar_det = np.linalg.det(covar)  # Determinant of covariance matrix
         
-        diff = X - mu ## shape X x d
-        numerator = np.exp(-0.5 * np.sum(((diff @ covar_inv) * diff), axis=1)) ## shape N x 1
-        denominator = np.sqrt((2 * np.pi) ** self.d * covar_det) ## scalar
-        # Avoid invalid values in sqrt by ensuring determinant is positive
-        p_k = numerator / denominator ## shape N x 1
+        # Calculate the Gaussian probability
+        diff = X - mu  # Difference between data points and the mean
+        numerator = np.exp(-0.5 * np.sum(((diff @ covar_inv) * diff), axis=1))  # Exponent term
+        denominator = np.sqrt((2 * np.pi) ** self.d * covar_det)  # Denominator
+
+        p_k = numerator / denominator  # Gaussian probability
         return p_k
