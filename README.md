@@ -82,6 +82,12 @@ In this example, I have 2 MRI images of the brain, and I want to segment them in
 You can run the EM algorithm by calling the main function in your code. Here’s an example:
 
 ```python
+from sklearn.preprocessing import MinMaxScaler, StandardScaler
+scaler = MinMaxScaler()
+# scaler = StandardScaler()
+
+X = scaler.fit_transform(X)
+
 em = ExpectationMaximization(X, k=3, max_iter=50, type='kmeans', plot_step=25, save_path='results/', show_plot=True, stop_criterion=1e-4)
 alphas, mus, covars, W = em.fit()
 ```
