@@ -89,7 +89,8 @@ class ExpectationMaximization:
             if iteration != 0:
                 self.expectation()
             self.maximization()
-            if iteration % update_frequency == 0:
+            ### Update the ATLAS weights with the current weights
+            if update_frequency and iteration % update_frequency == 0:
                 self.W = atlas_W * self.W
             ### Compute log likelihood
             self.current_log_likelihood = self.log_likelihood()
