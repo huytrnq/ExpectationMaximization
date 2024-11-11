@@ -5,7 +5,7 @@ from sklearn.cluster import KMeans
 
 from utils import plot_gaussians_on_bars
 class ExpectationMaximization:
-    def __init__(self, data, k, max_iter=100, type='kmeans', stop_criterion=1e-6, plot_step=-1, save_path=None, show_plot=False):
+    def __init__(self, data, k, max_iter=100, type='kmeans', stop_criterion=1e-6, plot_step=-1, save_path=None, show_plot=False, W=None):
         """Expectation Maximization algorithm for Gaussian Mixture Models
 
         Args:
@@ -17,6 +17,7 @@ class ExpectationMaximization:
             plot_step (int, optional): Display the plot of the clusters at step plot_step, -1 to plot at the end. Defaults to -1.
             save_path (str, optional): path to save the plot. Defaults to None.
             show_plot (bool, optional): Display the plot. Defaults to False.
+            W (numpy array, optional): membership weights. Defaults to None.
         """
         self.X = data
         self.k = k
@@ -29,7 +30,7 @@ class ExpectationMaximization:
         self.plot_step = plot_step
         self.save_path = save_path
         self.show_plot = show_plot
-        self.initialization()
+        self.initialization(W)
         
     def log_likelihood(self):
         """Compute log likelihood of the Gaussian Mixture Models
@@ -46,6 +47,11 @@ class ExpectationMaximization:
 
         
     def fit(self):
+        """Fit the Gaussian Mixture Models
+
+        Returns:
+            tuple: alphas, mus, covars, W
+        """
         for iteration in range(self.max_iter):
             start = time.time()
             self.expectation()
@@ -67,18 +73,54 @@ class ExpectationMaximization:
             else:
                 self.previous_log_likelihood = self.current_log_likelihood
         return self.alphas, self.mus, self.covars, self.W
+    
+    def fit_atlas(self, update_frequency=1, atlas_W=None):
+        """Fit the Gaussian Mixture Models with ATLAS integration
         
-        
-    def initialization(self):
-        """Initialize parameters of the Gaussian Mixture Models
+        Args:
+            update_frequency (int, optional): frequency to update the ATLAS. Defaults to 1.
+            atlas_W (numpy array, optional): membership weights of the ATLAS. Defaults to None.
 
+        Returns:
+            tuple: alphas, mus, covars, W
+        """
+        for iteration in range(self.max_iter):
+            start = time.time()
+            if iteration != 0:
+                self.expectation()
+            self.maximization()
+            if iteration % update_frequency == 0:
+                self.W = atlas_W * self.W
+            ### Compute log likelihood
+            self.current_log_likelihood = self.log_likelihood()
+            end = time.time()
+            print('Iteration: ', iteration, ' --- Log Likelihood: ', self.current_log_likelihood, ' --- Time (s): ', end - start)
+            ### Plot the clusters
+            if iteration % self.plot_step == 0 or iteration == self.max_iter - 1:
+                if self.d == 1:
+                    plot_gaussians_on_bars(self.X, self.mus, self.covars, iteration, save_path=self.save_path, show=self.show_plot)
+                else:
+                    plot_gaussians_on_bars(self.X, self.mus, np.diagonal(self.covars, axis1=1, axis2=2), iteration, save_path=self.save_path, show=self.show_plot)  
+                    
+            ### Check for convergence
+            if np.abs(self.current_log_likelihood - self.previous_log_likelihood) < self.stop_criterion:
+                break
+            else:
+                self.previous_log_likelihood = self.current_log_likelihood
+        return self.alphas, self.mus, self.covars, self.W
+        
+        
+    def initialization(self, W=None):
+        """Initialize parameters of the Gaussian Mixture Models
+        Args:
+            W (numpy array, optional): membership weights. Defaults to None.
         Raises:
             ValueError: Invalid initialization type
         """
         ### Initialize mixing coefficients
         self.alphas = np.ones(self.k) / self.k
         ### Initialize mixture weights
-        self.W = np.zeros((self.N, self.k))
+        self.W = np.zeros((self.N, self.k)) if W is None else W
         #### Initialize mean with kmeans
         if self.type == 'kmeans':
             ### Initialize means
